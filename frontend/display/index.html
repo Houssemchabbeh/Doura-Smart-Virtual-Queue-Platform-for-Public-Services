@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Doura · Écran d'affichage</title>
+  <link rel="stylesheet" href="display.css">
+</head>
+<body>
+  <!-- Écran public de la salle d'attente - Responsable : Adem -->
+  <header class="topbar">
+    <div>
+      <div class="brand">Doura</div>
+      <div id="agency-name" class="agency">Chargement…</div>
+    </div>
+    <div id="clock" class="clock">--:--</div>
+  </header>
+
+  <main>
+    <section class="current">
+      <div class="label">Ticket appelé</div>
+      <div class="current-row">
+        <div id="current-number" class="current-number">—</div>
+        <div class="current-counter">
+          <div class="label">Guichet</div>
+          <div id="current-counter" class="counter-big">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="history">
+      <div class="label">Appels précédents</div>
+      <table>
+        <thead><tr><th>Ticket</th><th>Service</th><th>Guichet</th><th>Heure</th></tr></thead>
+        <tbody id="history"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer id="status" class="footer">Connexion à l'API…</footer>
+
+  <script src="../shared/config.js"></script>
+  <script src="display.js"></script>
+</body>
+</html>

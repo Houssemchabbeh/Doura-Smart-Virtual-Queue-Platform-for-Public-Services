@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Doura</title>
+  <link rel="stylesheet" href="shared/style.css">
+</head>
+<body>
+  <!-- Page d'accueil - Responsable : Adem -->
+  <main class="container">
+    <h1>Doura</h1>
+    <p class="muted">File d'attente virtuelle pour les services publics. Données de démonstration fictives.</p>
+
+    <section class="card">
+      <h2>Écran d'affichage public</h2>
+      <p>Tickets appelés en temps réel dans la salle d'attente.</p>
+      <p><a id="display-link" href="display/index.html">Ouvrir l'écran de l'agence de démonstration</a></p>
+    </section>
+
+    <section class="card">
+      <h2>Agences</h2>
+      <div id="agencies" class="muted">Chargement…</div>
+    </section>
+
+    <p id="api-status" class="status muted"></p>
+  </main>
+
+  <script src="shared/config.js"></script>
+  <script>
+    (function () {
+      var cfg = window.DOURA_CONFIG;
+      var statusEl = document.getElementById("api-status");
+      var listEl = document.getElementById("agencies");
+      if (!cfg) {
+        statusEl.textContent = "config.js introuvable : lancer infra/deploy.py.";
+        statusEl.className = "status error";
+        listEl.textContent = "";
+        return;
+      }
+      document.getElementById("display-link").href = "display/index.html?agency=" + encodeURIComponent(cfg.defaultAgency);
+
+      fetch(cfg.apiUrl + "/agencies")
+        .then(function (r) { if (!r.ok) { throw new Error("HTTP " + r.status); } return r.json(); })
+        .then(function (data) {
+          listEl.textContent = "";
+          data.agencies.forEach(function (a) {
+            var block = document.createElement("div");
+            block.className = "card";
+            var title = document.createElement("strong");
+            title.textContent = a.name + " — " + a.city;
+            block.appendChild(title);
+            var ul = document.createElement("ul");
+            a.services.forEach(function (s) {
+              var li = document.createElement("li");
+              li.textContent = s.letter + " · " + s.name + " (" + s.hours + ") — pièces : " + s.required_documents.join(", ");
+              ul.appendChild(li);
+            });
+            block.appendChild(ul);
+            var link = document.createElement("a");
+            link.href = "display/index.html?agency=" + encodeURIComponent(a.agency_id);
+            link.textContent = "Écran d'affichage";
+            block.appendChild(link);
+            listEl.appendChild(block);
+          });
+          statusEl.textContent = "API : " + cfg.apiUrl + " (stage " + cfg.stage + ")";
+        })
+        .catch(function (err) {
+          listEl.textContent = "";
+          statusEl.textContent = "Impossible de joindre l'API (" + err.message + ").";
+          statusEl.className = "status error";
+        });
+    })();
+  </script>
+</body>
+</html>
