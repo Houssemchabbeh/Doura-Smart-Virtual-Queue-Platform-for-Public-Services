@@ -1,0 +1,51 @@
+/* Écran d'affichage public : lisible à plusieurs mètres - Responsable : Adem */
+:root {
+  --bg: #101614;
+  --panel: #18211e;
+  --ink: #f4f3ee;
+  --muted: #9fb0a8;
+  --accent: #34d399;
+  --line: #2a3530;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2vh 4vw;
+  border-bottom: 1px solid var(--line);
+}
+.brand { font-size: 2.2vw; font-weight: 700; letter-spacing: 0.05em; }
+.agency { font-size: 1.6vw; color: var(--muted); }
+.clock { font-size: 3vw; font-variant-numeric: tabular-nums; }
+main { flex: 1; display: grid; grid-template-columns: 1.2fr 1fr; gap: 3vw; padding: 3vh 4vw; }
+.label { font-size: 1.4vw; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.current { background: var(--panel); border-radius: 16px; padding: 3vh 3vw; display: flex; flex-direction: column; justify-content: center; }
+.current-row { display: flex; align-items: center; justify-content: space-between; gap: 3vw; flex-wrap: wrap; }
+.current-number { font-size: 9vw; font-weight: 800; color: var(--accent); line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.counter-big { font-size: 6vw; font-weight: 700; line-height: 1; white-space: nowrap; }
+.flash { animation: flash 1s ease-in-out 3; }
+@keyframes flash { 50% { opacity: 0.25; } }
+.history table { width: 100%; border-collapse: collapse; margin-top: 1.5vh; font-size: 2vw; }
+.history th { text-align: left; color: var(--muted); font-weight: 500; font-size: 1.2vw; padding: 1vh 0.5vw; border-bottom: 1px solid var(--line); }
+.history td { padding: 1.4vh 0.5vw; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.footer { padding: 1.2vh 4vw; color: var(--muted); font-size: 1vw; border-top: 1px solid var(--line); }
+.footer.error { color: #fca5a5; }
+@media (max-width: 800px) {
+  main { grid-template-columns: 1fr; }
+  .brand, .clock { font-size: 6vw; }
+  .agency, .label, .footer { font-size: 3.5vw; }
+  .current-number { font-size: 20vw; }
+  .counter-big { font-size: 14vw; }
+  .history table { font-size: 4.5vw; }
+  .history th { font-size: 3vw; }
+}

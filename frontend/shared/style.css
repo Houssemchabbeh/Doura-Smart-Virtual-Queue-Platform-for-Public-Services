@@ -1,0 +1,30 @@
+/* Styles communs Doura - Responsable : Adem */
+:root {
+  --ink: #1d1d1b;
+  --muted: #5f5e5a;
+  --line: #d9d8d3;
+  --paper: #fbfaf7;
+  --accent: #0b6e4f;
+  --accent-ink: #ffffff;
+  --warn: #9a3412;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+}
+a { color: var(--accent); }
+.container { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
+h1 { font-size: 1.8rem; margin: 0 0 8px; }
+.muted { color: var(--muted); }
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 12px 0;
+}
+.status { font-size: 0.9rem; }
+.status.error { color: var(--warn); }
