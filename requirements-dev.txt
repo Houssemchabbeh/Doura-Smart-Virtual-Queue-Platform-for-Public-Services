@@ -1,0 +1,4 @@
+-r requirements.txt
+pytest>=8
+moto[apigateway,awslambda,cloudwatch,cognitoidp,dynamodb,dynamodbstreams,ec2,iam,s3,sns,sqs,sts]>=5
+flake8>=7

@@ -1,9 +1,16 @@
+# Python
 __pycache__/
 *.pyc
 .venv/
-venv/
-.env
-build/
-dist/
-*.zip
 .pytest_cache/
+
+# Sorties de déploiement (identifiants de ressources, propres à chaque compte)
+infra/outputs-*.json
+
+# Généré au déploiement
+frontend/shared/config.js
+
+# Identifiants : ne JAMAIS commiter
+.aws/
+*.pem
+.env
