@@ -36,7 +36,8 @@ def load_outputs(stage: str) -> dict:
 
 
 def today_tickets(table, agency: str, day: str) -> list:
-    items, kwargs = [], {"FilterExpression": Attr("agency_id").eq(agency) & Attr("ticket_id").begins_with(f"{agency}#{day}#")}
+    prefix = f"{agency}_{day.replace('-', '')}_"  # ticket_id : <agence>_<aaaammjj>_<numéro>
+    items, kwargs = [], {"FilterExpression": Attr("agency_id").eq(agency) & Attr("ticket_id").begins_with(prefix)}
     while True:
         page = table.scan(**kwargs)
         items.extend(page.get("Items", []))

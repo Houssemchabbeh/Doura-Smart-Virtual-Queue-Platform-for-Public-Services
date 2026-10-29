@@ -58,7 +58,7 @@ def deploy(ctx: dict) -> dict:
             number = f"{service['letter']}-{i:03d}"
             created = (start + timedelta(minutes=3 * i)).strftime("%Y-%m-%dT%H:%M:%SZ")
             batch.put_item(Item={
-                "ticket_id": f"{demo['agency_id']}#{today}#{number}",
+                "ticket_id": f"{demo['agency_id']}_{today.replace('-', '')}_{number}",  # sans '#' : utilisable dans l'URL
                 "agency_id": demo["agency_id"], "agency_name": demo["name"],
                 "service": service["code"], "number": number, "status": "WAITING", "priority": "NORMAL",
                 "queue_key": f"{demo['agency_id']}#{today}#{service['letter']}",

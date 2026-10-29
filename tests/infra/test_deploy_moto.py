@@ -54,7 +54,11 @@ def test_full_deployment_is_idempotent(learner_lab):
 
     lam = s.client("lambda")
     functions = sorted(f["FunctionName"] for f in lam.list_functions()["Functions"])
-    assert functions == ["doura-demo-agencies", "doura-demo-display", "doura-demo-health", "doura-demo-notifier"]
+    assert functions == ["doura-demo-agencies", "doura-demo-display", "doura-demo-health", "doura-demo-notifier",
+                         "doura-demo-queue", "doura-demo-tickets"]
+    tickets_env = lam.get_function_configuration(FunctionName="doura-demo-tickets")["Environment"]["Variables"]
+    assert len(tickets_env["CIN_SALT"]) == 64
+    assert first["outputs"]["cin_salt"] == second["outputs"]["cin_salt"], "le sel CIN ne doit jamais être régénéré"
     assert lam.get_function_configuration(FunctionName="doura-demo-display")["VpcConfig"]["SubnetIds"] == \
         [first["outputs"]["subnet_id"]]
     assert not lam.get_function_configuration(FunctionName="doura-demo-notifier").get("VpcConfig", {}).get("SubnetIds")
@@ -64,7 +68,13 @@ def test_full_deployment_is_idempotent(learner_lab):
     apis = [a for a in s.client("apigateway").get_rest_apis()["items"] if a["name"] == "doura-demo-api"]
     assert len(apis) == 1
     paths = sorted(r["path"] for r in s.client("apigateway").get_resources(restApiId=apis[0]["id"])["items"])
-    assert paths == ["/", "/agencies", "/display", "/health", "/me"]
+    assert paths == ["/", "/agencies", "/agencies/{agency_id}", "/agencies/{agency_id}/counters",
+                     "/agencies/{agency_id}/counters/{counter_id}", "/agencies/{agency_id}/counters/{counter_id}/call-next",
+                     "/agencies/{agency_id}/services", "/agencies/{agency_id}/services/{letter}",
+                     "/display", "/health", "/me", "/tickets", "/tickets/{ticket_id}"]
+    by_path = {r["path"]: r for r in s.client("apigateway").get_resources(restApiId=apis[0]["id"])["items"]}
+    assert sorted(by_path["/tickets/{ticket_id}"]["resourceMethods"]) == ["DELETE", "GET", "OPTIONS", "PATCH"]
+    assert sorted(by_path["/agencies/{agency_id}/services"]["resourceMethods"]) == ["GET", "OPTIONS", "POST"]
 
     cip = s.client("cognito-idp")
     pools = [p for p in cip.list_user_pools(MaxResults=60)["UserPools"] if p["Name"] == "doura-demo-users"]
@@ -73,7 +83,7 @@ def test_full_deployment_is_idempotent(learner_lab):
     assert groups == ["ADMIN", "AGENT", "CITIZEN", "MANAGER"]
 
     alarms = s.client("cloudwatch").describe_alarms(AlarmNamePrefix="doura-demo-")["MetricAlarms"]
-    assert len(alarms) == 4
+    assert len(alarms) == 6
 
     objects = [o["Key"] for o in s.client("s3").list_objects_v2(Bucket=first["outputs"]["site_bucket"])["Contents"]]
     assert "index.html" in objects and "display/index.html" in objects and "shared/config.js" in objects

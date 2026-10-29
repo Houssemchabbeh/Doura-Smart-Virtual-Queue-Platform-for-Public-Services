@@ -1,8 +1,9 @@
 """Smoke test : vérifie que la plateforme déployée répond.
 
 Responsable : Houssem Eddine.
-Contrôles : GET /health = 200, GET /agencies renvoie au moins 3 agences, GET /display = 200,
-GET /me sans jeton = 401 (l'autorisateur Cognito bloque bien), site S3 accessible.
+Contrôles : GET /health = 200, GET /agencies renvoie au moins 3 agences, GET /agencies/<agence> = 200,
+GET /display = 200, GET /me et POST /tickets sans jeton = 401 (l'autorisateur Cognito bloque bien),
+site S3 accessible.
 """
 import json
 import time
@@ -28,6 +29,10 @@ def run(ctx: dict) -> dict:
     _check(status == 200 and count >= 3, f"/agencies : statut {status}, {count} agences")
     common.log("smoke", f"/agencies OK ({count} agences)")
 
+    status, body = _get(f"{api}/agencies/{agency}")
+    _check(status == 200 and json.loads(body).get("agency_id") == agency, f"/agencies/{agency} a renvoyé {status}")
+    common.log("smoke", f"/agencies/{agency} OK")
+
     status, _ = _get(f"{api}/display?agency_id={agency}")
     _check(status == 200, f"/display a renvoyé {status}")
     common.log("smoke", "/display OK")
@@ -35,6 +40,10 @@ def run(ctx: dict) -> dict:
     status, _ = _get(f"{api}/me")
     _check(status == 401, f"/me sans jeton aurait dû renvoyer 401, reçu {status}")
     common.log("smoke", "/me sans jeton -> 401 OK (Cognito actif)")
+
+    status, _ = _get(f"{api}/tickets", method="POST", data=b'{}')
+    _check(status == 401, f"POST /tickets sans jeton aurait dû renvoyer 401, reçu {status}")
+    common.log("smoke", "POST /tickets sans jeton -> 401 OK")
 
     if "site_url" in ctx["outputs"]:
         status, _ = _get(ctx["outputs"]["site_url"], retries=2)
@@ -45,11 +54,13 @@ def run(ctx: dict) -> dict:
     return {"smoke": "ok"}
 
 
-def _get(url: str, retries: int = RETRIES):
+def _get(url: str, retries: int = RETRIES, method: str = "GET", data: bytes = None):
     last = None
     for attempt in range(retries):
         try:
-            with urllib.request.urlopen(url, timeout=10) as resp:
+            request = urllib.request.Request(url, data=data, method=method,
+                                             headers={"Content-Type": "application/json"} if data else {})
+            with urllib.request.urlopen(request, timeout=10) as resp:
                 return resp.status, resp.read().decode("utf-8")
         except urllib.error.HTTPError as exc:
             if exc.code not in (502, 503, 504):

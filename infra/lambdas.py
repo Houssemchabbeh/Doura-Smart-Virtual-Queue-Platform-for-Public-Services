@@ -1,17 +1,20 @@
-"""Lambdas de démo du Sprint 1 : packaging et déploiement.
+"""Lambdas Doura : packaging et déploiement.
 
 Responsable : Houssem (code métier des fonctions : Mouhamed, dans backend/functions/).
-Sorties : functions = {clé: {"name": ..., "arn": ...}}.
+Sorties : functions = {clé: {"name": ..., "arn": ...}}, cin_salt (sel HMAC du CIN, généré une seule fois).
 
 - Chaque zip contient handler.py (+ autres .py du dossier de la fonction) et backend/common/doura_common.py.
 - Zip déterministe : même code -> même empreinte -> aucune mise à jour inutile (idempotence).
 - LabRole uniquement (aucun rôle IAM créé).
-- health, agencies, display : dans le sous-réseau privé (DynamoDB via endpoint de passerelle).
+- health, agencies, display, tickets, queue : dans le sous-réseau privé (DynamoDB via endpoint de passerelle).
+- cin_salt : secrets.token_hex(32) au premier déploiement, conservé dans outputs-<stage>.json (ignoré par Git)
+  et jamais régénéré (sinon les empreintes de CIN déjà stockées ne correspondraient plus).
 - notifier : hors VPC (lit le Stream et publie sur SNS ; évite un endpoint SNS payant) + déclencheur Stream.
 """
 import base64
 import hashlib
 import io
+import secrets
 import zipfile
 
 from botocore.exceptions import ClientError
@@ -24,8 +27,14 @@ HANDLER = "handler.lambda_handler"
 
 FUNCTIONS = {
     "health":   {"vpc": True,  "timeout": 5,  "memory": 128, "env": {}},
-    "agencies": {"vpc": True,  "timeout": 10, "memory": 128, "env": {"AGENCIES_TABLE": "agencies_table"}},
+    "agencies": {"vpc": True,  "timeout": 10, "memory": 128,
+                 "env": {"AGENCIES_TABLE": "agencies_table", "TICKETS_TABLE": "tickets_table"}},
     "display":  {"vpc": True,  "timeout": 10, "memory": 128,
+                 "env": {"TICKETS_TABLE": "tickets_table", "AGENCIES_TABLE": "agencies_table"}},
+    "tickets":  {"vpc": True,  "timeout": 10, "memory": 128,
+                 "env": {"TICKETS_TABLE": "tickets_table", "AGENCIES_TABLE": "agencies_table",
+                         "CONTROL_TABLE": "control_table", "CIN_SALT": "cin_salt"}},
+    "queue":    {"vpc": True,  "timeout": 10, "memory": 128,
                  "env": {"TICKETS_TABLE": "tickets_table", "AGENCIES_TABLE": "agencies_table"}},
     "notifier": {"vpc": False, "timeout": 15, "memory": 128, "env": {"TOPIC_ARN": "ticket_topic_arn"},
                  "stream": "tickets_stream_arn"},
@@ -36,6 +45,9 @@ def deploy(ctx: dict) -> dict:
     common.require(ctx, "subnet_id", "lambda_sg_id", "agencies_table", "tickets_table",
                    "tickets_stream_arn", "ticket_topic_arn")
     lam = ctx["session"].client("lambda")
+    if not ctx["outputs"].get("cin_salt"):
+        ctx["outputs"]["cin_salt"] = secrets.token_hex(32)
+        common.log("lambdas", "sel CIN_SALT généré (conservé dans outputs, jamais affiché)")
     functions = {}
     for key, spec in FUNCTIONS.items():
         name = common.name(ctx, key)
@@ -45,7 +57,7 @@ def deploy(ctx: dict) -> dict:
         if spec.get("stream"):
             _ensure_stream_trigger(lam, name, ctx["outputs"][spec["stream"]])
         functions[key] = {"name": name, "arn": arn}
-    return {"functions": functions}
+    return {"functions": functions, "cin_salt": ctx["outputs"]["cin_salt"]}
 
 
 def build_zip(key: str) -> bytes:
