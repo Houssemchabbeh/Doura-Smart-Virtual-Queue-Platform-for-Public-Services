@@ -13,6 +13,19 @@ $STAGE = "houssem"   # your stage name (resources are named doura-<stage>-...)
 2. Check access, deploy and load the outputs:
 
 ```powershell
+Create a virtual environment:
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+If PowerShell blocks activation, run:
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+
+Install the project dependencies:
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt
+
 python -m infra.check_access                                   # must show [ok] everywhere
 $env:DOURA_DEMO_EMAIL = "<your-email>"                         # receives the SNS notifications
 python infra/deploy.py --stage $STAGE                          # deploys everything + smoke test
