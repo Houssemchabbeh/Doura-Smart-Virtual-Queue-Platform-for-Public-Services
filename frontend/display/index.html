@@ -7,17 +7,17 @@
   <link rel="stylesheet" href="display.css">
 </head>
 <body>
-  <!-- Écran public de la salle d'attente - Responsable : Adem -->
+  <!-- Écran public de la salle d'attente (sans authentification) - Responsable : Adem -->
   <header class="topbar">
     <div>
-      <div class="brand">Doura</div>
+      <div class="brand">Doura <span id="demo-badge" class="badge" hidden>Mode démo · données fictives</span></div>
       <div id="agency-name" class="agency">Chargement…</div>
     </div>
     <div id="clock" class="clock">--:--</div>
   </header>
 
   <main>
-    <section class="current">
+    <section class="current" aria-live="polite">
       <div class="label">Ticket appelé</div>
       <div class="current-row">
         <div id="current-number" class="current-number">—</div>
@@ -26,6 +26,7 @@
           <div id="current-counter" class="counter-big">—</div>
         </div>
       </div>
+      <div id="current-service" class="current-service"></div>
     </section>
 
     <section class="history">
@@ -37,9 +38,13 @@
     </section>
   </main>
 
-  <footer id="status" class="footer">Connexion à l'API…</footer>
+  <footer class="footer">
+    <div class="refresh-bar" aria-hidden="true"><span id="refresh-progress"></span></div>
+    <div id="status" class="status-text">Connexion à l'API…</div>
+  </footer>
 
   <script src="../shared/config.js"></script>
+  <script src="demo.js"></script>
   <script src="display.js"></script>
 </body>
 </html>

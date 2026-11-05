@@ -37,13 +37,24 @@ main { flex: 1; display: grid; grid-template-columns: 1.2fr 1fr; gap: 3vw; paddi
 @keyframes flash { 50% { opacity: 0.25; } }
 .history table { width: 100%; border-collapse: collapse; margin-top: 1.5vh; font-size: 2vw; }
 .history th { text-align: left; color: var(--muted); font-weight: 500; font-size: 1.2vw; padding: 1vh 0.5vw; border-bottom: 1px solid var(--line); }
+.history td:not(:nth-child(2)) { white-space: nowrap; }
 .history td { padding: 1.4vh 0.5vw; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
-.footer { padding: 1.2vh 4vw; color: var(--muted); font-size: 1vw; border-top: 1px solid var(--line); }
-.footer.error { color: #fca5a5; }
+.current-service { margin-top: 2vh; font-size: 1.8vw; color: var(--muted); }
+.history td.empty { color: var(--muted); font-size: 1.4vw; }
+.badge { display: inline-block; vertical-align: middle; margin-left: 1vw; padding: 0.3em 0.8em; border-radius: 999px;
+  background: #3b2f0b; color: #fcd34d; font-size: 0.9vw; font-weight: 600; letter-spacing: 0.04em; }
+.badge[hidden] { display: none; }
+.footer { color: var(--muted); font-size: 1vw; border-top: 1px solid var(--line); }
+.status-text { padding: 1.2vh 4vw; }
+.status-text.error { color: #fca5a5; }
+.refresh-bar { height: 4px; background: var(--line); }
+.refresh-bar span { display: block; height: 100%; width: 100%; background: var(--accent); transform-origin: left; }
+@keyframes countdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 @media (max-width: 800px) {
   main { grid-template-columns: 1fr; }
   .brand, .clock { font-size: 6vw; }
-  .agency, .label, .footer { font-size: 3.5vw; }
+  .agency, .label, .footer, .current-service { font-size: 3.5vw; }
+  .badge { font-size: 2.6vw; }
   .current-number { font-size: 20vw; }
   .counter-big { font-size: 14vw; }
   .history table { font-size: 4.5vw; }
